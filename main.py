@@ -71,11 +71,7 @@ def main():
         # If you want KST, you can adjust manually, but keeping it simple for now
         # Creating a nice message
         # Emoji flags: 🇦🇺 (AUD), 🇰🇷 (KRW)
-        message = (
-            f"🔔 <b>KRW/AUD Exchange Rate Update</b>\n\n"
-            f"🇦🇺 1 AUD = 🇰🇷 <b>{formatted_rate} KRW</b>\n\n"
-            f"📅 <i>Checked at: {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}</i>"
-        )
+        message = f"🇦🇺 1 AUD = 🇰🇷 <b>{formatted_rate} KRW</b>"
         
         success = send_telegram_message(TELEGRAM_TOKEN, CHAT_ID, message)
         if not success:

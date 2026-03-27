@@ -1,29 +1,34 @@
 import os
 import requests
-import yfinance as yf
+from bs4 import BeautifulSoup
 from datetime import datetime
 import sys
 from dotenv import load_dotenv
 
 def get_exchange_rate():
     try:
-        # AUD to KRW symbol in Yahoo Finance is 'AUDKRW=X'
-        ticker = "AUDKRW=X"
-        data = yf.Ticker(ticker)
+        url = "https://www.google.com/finance/quote/AUD-KRW"
+        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36"})
         
-        # Get the latest market data
-        # 'regularMarketPrice' is often reliable, checking history as fallback
-        history = data.history(period="1d")
-        
-        if history.empty:
-            print("Error: Could not fetch history data.")
+        if response.status_code != 200:
+            print(f"Error: Received status code {response.status_code}")
             return None
             
-        current_rate = history['Close'].iloc[-1]
-        return current_rate
+        soup = BeautifulSoup(response.text, "html.parser")
         
+        # Google Finance class for the exchange rate value
+        rate_div = soup.find("div", {"class": "YMlKec fxKbKc"})
+        
+        if rate_div:
+            # Remove any commas from the string and convert to float (e.g. "904.56")
+            rate_str = rate_div.text.replace(",", "")
+            return float(rate_str)
+        else:
+            print("Error: Could not find rate div on Google Finance.")
+            return None
+            
     except Exception as e:
-        print(f"Error fetching exchange rate: {e}")
+        print(f"Error fetching exchange rate from Google: {e}")
         return None
 
 def send_telegram_message(token, chat_id, message):

@@ -1,34 +1,32 @@
 import os
 import requests
-from bs4 import BeautifulSoup
 from datetime import datetime
 import sys
 from dotenv import load_dotenv
 
 def get_exchange_rate():
     try:
-        url = "https://www.google.com/finance/quote/AUD-KRW"
-        response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36"})
-        
+        url = "https://open.er-api.com/v6/latest/AUD"
+        response = requests.get(url, timeout=10)
+
         if response.status_code != 200:
             print(f"Error: Received status code {response.status_code}")
             return None
-            
-        soup = BeautifulSoup(response.text, "html.parser")
-        
-        # Google Finance class for the exchange rate value
-        rate_div = soup.find("div", {"class": "YMlKec fxKbKc"})
-        
-        if rate_div:
-            # Remove any commas from the string and convert to float (e.g. "904.56")
-            rate_str = rate_div.text.replace(",", "")
-            return float(rate_str)
-        else:
-            print("Error: Could not find rate div on Google Finance.")
+
+        data = response.json()
+        if data.get("result") != "success":
+            print(f"Error: API returned result={data.get('result')}")
             return None
-            
+
+        krw_rate = data.get("rates", {}).get("KRW")
+        if krw_rate is None:
+            print("Error: KRW rate not found in API response.")
+            return None
+
+        return float(krw_rate)
+
     except Exception as e:
-        print(f"Error fetching exchange rate from Google: {e}")
+        print(f"Error fetching exchange rate: {e}")
         return None
 
 def send_telegram_message(token, chat_id, message):

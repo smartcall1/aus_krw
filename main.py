@@ -18,12 +18,15 @@ def get_exchange_rate():
             print(f"Error: API returned result={data.get('result')}")
             return None
 
-        krw_rate = data.get("rates", {}).get("KRW")
-        if krw_rate is None:
-            print("Error: KRW rate not found in API response.")
+        rates = data.get("rates", {})
+        krw_rate = rates.get("KRW")
+        usd_rate = rates.get("USD")
+        if krw_rate is None or usd_rate is None:
+            print("Error: KRW or USD rate not found in API response.")
             return None
 
-        return float(krw_rate)
+        usd_krw = krw_rate / usd_rate
+        return {"aud_krw": float(krw_rate), "usd_krw": float(usd_krw)}
 
     except Exception as e:
         print(f"Error fetching exchange rate: {e}")
@@ -64,18 +67,17 @@ def main():
         print("For local test: Create a .env file or set export TELEGRAM_TOKEN='your_token' && export CHAT_ID='your_id'")
         sys.exit(1)
 
-    rate = get_exchange_rate()
-    
-    if rate:
-        # Format the rate (e.g., 905.50)
-        formatted_rate = f"{rate:.2f}"
-        
-        # Get current time (UTC) - GitHub Actions is usually UTC
-        # If you want KST, you can adjust manually, but keeping it simple for now
-        # Creating a nice message
-        # Emoji flags: 🇦🇺 (AUD), 🇰🇷 (KRW)
-        message = f"🇦🇺 1 AUD = 🇰🇷 <b>{formatted_rate} KRW</b>"
-        
+    result = get_exchange_rate()
+
+    if result:
+        aud_krw = f"{result['aud_krw']:.2f}"
+        usd_krw = f"{result['usd_krw']:.2f}"
+
+        message = (
+            f"🇦🇺 1 AUD = 🇰🇷 <b>{aud_krw} KRW</b>\n"
+            f"🇺🇸 1 USD = 🇰🇷 <b>{usd_krw} KRW</b>"
+        )
+
         success = send_telegram_message(TELEGRAM_TOKEN, CHAT_ID, message)
         if not success:
             sys.exit(1)

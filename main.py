@@ -4,29 +4,42 @@ from datetime import datetime
 import sys
 from dotenv import load_dotenv
 
+def get_naver_rate(reuters_code):
+    url = "https://m.stock.naver.com/front-api/marketIndex/prices"
+    params = {"category": "exchange", "reutersCode": reuters_code}
+    response = requests.get(url, params=params, timeout=10)
+
+    if response.status_code != 200:
+        print(f"Error: Received status code {response.status_code} for {reuters_code}")
+        return None
+
+    data = response.json()
+    if not data.get("isSuccess"):
+        print(f"Error: Naver API returned failure for {reuters_code}: {data.get('message')}")
+        return None
+
+    result = data.get("result") or []
+    if not result:
+        print(f"Error: No rate data returned for {reuters_code}")
+        return None
+
+    close_price = result[0].get("closePrice")
+    if close_price is None:
+        print(f"Error: closePrice missing for {reuters_code}")
+        return None
+
+    return float(close_price.replace(",", ""))
+
 def get_exchange_rate():
     try:
-        url = "https://open.er-api.com/v6/latest/AUD"
-        response = requests.get(url, timeout=10)
+        aud_krw = get_naver_rate("FX_AUDKRW")
+        usd_krw = get_naver_rate("FX_USDKRW")
+        nzd_krw = get_naver_rate("FX_NZDKRW")
 
-        if response.status_code != 200:
-            print(f"Error: Received status code {response.status_code}")
+        if aud_krw is None or usd_krw is None or nzd_krw is None:
             return None
 
-        data = response.json()
-        if data.get("result") != "success":
-            print(f"Error: API returned result={data.get('result')}")
-            return None
-
-        rates = data.get("rates", {})
-        krw_rate = rates.get("KRW")
-        usd_rate = rates.get("USD")
-        if krw_rate is None or usd_rate is None:
-            print("Error: KRW or USD rate not found in API response.")
-            return None
-
-        usd_krw = krw_rate / usd_rate
-        return {"aud_krw": float(krw_rate), "usd_krw": float(usd_krw)}
+        return {"aud_krw": aud_krw, "usd_krw": usd_krw, "nzd_krw": nzd_krw}
 
     except Exception as e:
         print(f"Error fetching exchange rate: {e}")
@@ -72,10 +85,12 @@ def main():
     if result:
         aud_krw = f"{result['aud_krw']:.2f}"
         usd_krw = f"{result['usd_krw']:.2f}"
+        nzd_krw = f"{result['nzd_krw']:.2f}"
 
         message = (
             f"🇦🇺 1 AUD = 🇰🇷 <b>{aud_krw} KRW</b>\n"
-            f"🇺🇸 1 USD = 🇰🇷 <b>{usd_krw} KRW</b>"
+            f"🇺🇸 1 USD = 🇰🇷 <b>{usd_krw} KRW</b>\n"
+            f"🇳🇿 1 NZD = 🇰🇷 <b>{nzd_krw} KRW</b>"
         )
 
         success = send_telegram_message(TELEGRAM_TOKEN, CHAT_ID, message)

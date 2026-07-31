@@ -83,9 +83,9 @@ def main():
     result = get_exchange_rate()
 
     if result:
-        aud_krw = f"{result['aud_krw']:.2f}"
-        usd_krw = f"{result['usd_krw']:.2f}"
-        nzd_krw = f"{result['nzd_krw']:.2f}"
+        aud_krw = f"{result['aud_krw']:,.2f}"
+        usd_krw = f"{result['usd_krw']:,.2f}"
+        nzd_krw = f"{result['nzd_krw']:,.2f}"
 
         message = (
             f"🇦🇺 1 AUD = 🇰🇷 <b>{aud_krw} KRW</b>\n"

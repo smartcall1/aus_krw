@@ -1,0 +1,42 @@
+name: Repo Keepalive
+
+on:
+  schedule:
+    # Runs weekly; only commits if 50+ days have passed since the last commit.
+    # (GitHub auto-disables scheduled workflows after 60 days of repo inactivity.)
+    - cron: '0 0 * * 1'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check days since last commit
+        id: check
+        run: |
+          last_commit_epoch=$(git log -1 --format=%ct)
+          now_epoch=$(date +%s)
+          days_since=$(( (now_epoch - last_commit_epoch) / 86400 ))
+          echo "Days since last commit: $days_since"
+          if [ "$days_since" -ge 50 ]; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit keepalive marker
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "Last keepalive: $(date -u +%Y-%m-%dT%H:%M:%SZ)" > .keepalive
+          git add .keepalive
+          git commit -m "chore: keepalive commit to prevent scheduled workflow auto-disable"
+          git push

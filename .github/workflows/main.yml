@@ -2,8 +2,8 @@ name: KRW AUD Exchange Rate Bot
 
 on:
   schedule:
-    # Runs at minute 0 past every hour
-    - cron: '0 * * * *'
+    # Runs at minute 13 past every hour (avoids GitHub Actions top-of-hour congestion at :00)
+    - cron: '13 * * * *'
   workflow_dispatch: # Allows manual run from Actions tab
 
 jobs:

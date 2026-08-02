@@ -68,7 +68,7 @@ def send_telegram_message(token, chat_id, message):
 def main():
     # Load secrets from .env file (if it exists)
     load_dotenv()
-    
+
     # Load secrets from environment variables
     # These should be set in GitHub Actions Secrets or .env file
     TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
@@ -88,9 +88,9 @@ def main():
         nzd_krw = f"{result['nzd_krw']:,.2f}"
 
         message = (
+            f"🇳🇿 1 NZD = 🇰🇷 <b>{nzd_krw} KRW</b>\n"
             f"🇦🇺 1 AUD = 🇰🇷 <b>{aud_krw} KRW</b>\n"
-            f"🇺🇸 1 USD = 🇰🇷 <b>{usd_krw} KRW</b>\n"
-            f"🇳🇿 1 NZD = 🇰🇷 <b>{nzd_krw} KRW</b>"
+            f"🇺🇸 1 USD = 🇰🇷 <b>{usd_krw} KRW</b>"
         )
 
         success = send_telegram_message(TELEGRAM_TOKEN, CHAT_ID, message)

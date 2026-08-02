@@ -127,7 +127,7 @@ def main():
         usd_krw = f"{result['usd_krw']:,.2f}"
         nzd_krw = f"{result['nzd_krw']:,.2f}"
 
-        separator = "\n────────────────────\n"
+        separator = "\n\n"
         message = separator.join([
             f"🇳🇿 1 NZD = 🇰🇷 <b>{nzd_krw} KRW</b> ({result['nzd_change']}, 24H)",
             f"🇦🇺 1 AUD = 🇰🇷 <b>{aud_krw} KRW</b> ({result['aud_change']}, 24H)",

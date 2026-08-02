@@ -129,9 +129,9 @@ def main():
 
         separator = "\n\n"
         message = separator.join([
-            f"🇳🇿 1 NZD = 🇰🇷 <b>{nzd_krw} KRW</b> ({result['nzd_change']}, 24H)",
-            f"🇦🇺 1 AUD = 🇰🇷 <b>{aud_krw} KRW</b> ({result['aud_change']}, 24H)",
-            f"🇺🇸 1 USD = 🇰🇷 <b>{usd_krw} KRW</b> ({result['usd_change']}, 24H)",
+            f"🇳🇿 1 NZD = 🇰🇷 <b>{nzd_krw} KRW</b>\n({result['nzd_change']}, 24H)",
+            f"🇦🇺 1 AUD = 🇰🇷 <b>{aud_krw} KRW</b>\n({result['aud_change']}, 24H)",
+            f"🇺🇸 1 USD = 🇰🇷 <b>{usd_krw} KRW</b>\n({result['usd_change']}, 24H)",
         ])
 
         success = send_telegram_message(TELEGRAM_TOKEN, CHAT_ID, message)

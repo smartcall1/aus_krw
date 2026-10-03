@@ -54,31 +54,19 @@ def get_naver_rate(reuters_code):
         print(f"Error: closePrice missing for {reuters_code}")
         return None
 
-    fluctuations_ratio = result[0].get("fluctuationsRatio")
-    if fluctuations_ratio is not None:
-        # Naver ratio already carries "-" for falls but omits "+" for rises
-        change_pct = f"{float(fluctuations_ratio):+.2f}%"
-    else:
-        change_pct = "N/A"
-
-    return {
-        "price": float(close_price.replace(",", "")),
-        "change_pct": change_pct,
-    }
+    return float(close_price.replace(",", ""))
 
 def get_exchange_rate():
     try:
         aud = get_naver_rate("FX_AUDKRW")
         usd = get_naver_rate("FX_USDKRW")
-        nzd = get_naver_rate("FX_NZDKRW")
 
-        if aud is None or usd is None or nzd is None:
+        if aud is None or usd is None:
             return None
 
         return {
-            "aud_krw": aud["price"], "aud_change": aud["change_pct"],
-            "usd_krw": usd["price"], "usd_change": usd["change_pct"],
-            "nzd_krw": nzd["price"], "nzd_change": nzd["change_pct"],
+            "aud_krw": aud,
+            "usd_krw": usd,
         }
 
     except Exception as e:
@@ -123,16 +111,7 @@ def main():
     result = get_exchange_rate()
 
     if result:
-        aud_krw = f"{result['aud_krw']:,.2f}"
-        usd_krw = f"{result['usd_krw']:,.2f}"
-        nzd_krw = f"{result['nzd_krw']:,.2f}"
-
-        separator = "\n\n"
-        message = separator.join([
-            f"🇳🇿 1 NZD = 🇰🇷 <b>{nzd_krw} KRW</b>\n({result['nzd_change']}, 24H)",
-            f"🇦🇺 1 AUD = 🇰🇷 <b>{aud_krw} KRW</b>\n({result['aud_change']}, 24H)",
-            f"🇺🇸 1 USD = 🇰🇷 <b>{usd_krw} KRW</b>\n({result['usd_change']}, 24H)",
-        ])
+        message = f"{result['aud_krw']:.1f} 🇦🇺 / {result['usd_krw']:.1f} 🇺🇸"
 
         success = send_telegram_message(TELEGRAM_TOKEN, CHAT_ID, message)
         if not success:
